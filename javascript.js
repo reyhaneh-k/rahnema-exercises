@@ -15,15 +15,14 @@ class Node {
     }
     node.next = new Node(value);
   }
+  //this method utilized recursions
   size() {
-    let counter = 0;
     let node = this;
-    //do this part with recursion
-    while (node instanceof Node) {
-      node = node.next;
-      counter++;
+    if (node.next === null) {
+      return 1;
+    } else {
+      return 1 + node.next.size();
     }
-    return counter;
   }
   at(n) {
     let node = this;
