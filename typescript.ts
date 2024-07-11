@@ -3,16 +3,10 @@ interface toDo {
   name: string;
   status: "done" | "undone";
 }
-// type Test = {
-//   id: number;
-//   name: string;
-//   status: "done" | "undone";
-// };
-// type b = keyof Test
-// const s:b = ''
 
 type List = Array<toDo>;
 type field = keyof toDo;
+
 class toDoList {
   list: List;
   constructor(task: toDo) {
@@ -29,9 +23,31 @@ class toDoList {
   addTask(task: toDo) {
     this.list.push(task);
   }
+
+  //filtering tasks with a value and field
   filterTask<T extends field>(value: toDo[T], field: T) {
     return this.list.filter((task) => task[field] == value);
   }
+
+  //filtering tasks with currying
+  filterTaskCurry<T extends field>(field: T) {
+    return (value: toDo[T]) => this.list.filter((task) => task[field] == value);
+  }
+
+  //filtering tasks with a function
+  filterTaskFn(fn: (task: toDo) => boolean) {
+    return this.list.filter(fn);
+  }
+
+  //filtering tasks using the partial utility
+  filterTaskPartial(filterObj: Partial<toDo>) {
+    return this.list.filter((task) => {
+      return Object.keys(filterObj).reduce((acc, key) => {
+        return acc && task[key] == filterObj[key];
+      }, true);
+    });
+  }
+
   removeTask(task: toDo) {
     const index = this.list.findIndex(
       (t) => t.id == task.id && t.name == task.name && t.status == task.status
@@ -52,3 +68,12 @@ class toDoList {
     return this.list.filter((task) => task["name"] == name);
   }
 }
+
+const myList = new toDoList({ id: 1, name: "first", status: "undone" });
+myList.addTask({ id: 2, name: "second", status: "done" });
+myList.addTask({ id: 8, name: "eight", status: "undone" });
+
+console.log(myList.filterTask(2, "id"));
+console.log(myList.filterTaskCurry("id")(1));
+console.log(myList.filterTaskFn((task) => task["id"] < 5));
+console.log(myList.filterTaskPartial({ name: "first", status: "undone" }));
