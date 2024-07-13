@@ -68,6 +68,7 @@ function draw(state: State) {
   // app.replaceChildren()
   [...app.children].forEach((child) => app.removeChild(child));
 
+  //creating a form for entering tasks
   const form = document.createElement("form");
   const label = document.createElement("label");
   const input = document.createElement("input");
@@ -79,6 +80,8 @@ function draw(state: State) {
   label.htmlFor = "inp";
   form.append(label);
   form.append(input);
+
+  //submitting tasks with an enter keypress event and a click event
   input.addEventListener("keypress", (e) => {
     if (e.key == "Enter" && input.value !== "") {
       addToDo(input.value);
@@ -90,7 +93,10 @@ function draw(state: State) {
   form.append(submit);
   app.append(form);
 
+  //creating an empty task list
   const todoList = document.createElement("ul");
+
+  //filling the task list based on the selected filter
   state.ToDoItems.filter((task) => {
     switch (state.selectedFilter) {
       case "done":
@@ -111,8 +117,10 @@ function draw(state: State) {
     todoList.appendChild(listItem);
   });
 
+  //appending the task list to the body element
   app.appendChild(todoList);
 
+  //a function for creating buttons to filter our tasks
   const createBtn = (title: Filter) => {
     const btn = document.createElement("button");
     btn.textContent = title;
@@ -122,30 +130,30 @@ function draw(state: State) {
     return btn;
   };
 
+  //creating buttons for our button group
   const allBtn = createBtn("All");
   const todoBtn = createBtn("Todo");
   const doneBtn = createBtn("done");
 
-  const setSelectedBtn = () => {
-    switch (state.selectedFilter) {
-      case "done":
-        doneBtn.style.color = "red";
-        todoBtn.style.color = "black";
-        allBtn.style.color = "black";
-        break;
+  //changing the style of buttons in the button group based on the selected filter
+  switch (state.selectedFilter) {
+    case "done":
+      doneBtn.style.color = "red";
+      todoBtn.style.color = "black";
+      allBtn.style.color = "black";
+      break;
 
-      case "Todo":
-        doneBtn.style.color = "black";
-        todoBtn.style.color = "red";
-        allBtn.style.color = "black";
-        break;
-      case "All":
-        doneBtn.style.color = "black";
-        todoBtn.style.color = "black";
-        allBtn.style.color = "red";
-        break;
-    }
-  };
-  setSelectedBtn();
+    case "Todo":
+      doneBtn.style.color = "black";
+      todoBtn.style.color = "red";
+      allBtn.style.color = "black";
+      break;
+    case "All":
+      doneBtn.style.color = "black";
+      todoBtn.style.color = "black";
+      allBtn.style.color = "red";
+      break;
+  }
+
   app.append(allBtn, todoBtn, doneBtn);
 }
