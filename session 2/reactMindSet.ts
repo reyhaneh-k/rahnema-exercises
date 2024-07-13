@@ -71,6 +71,8 @@ function draw(state: State) {
   const form = document.createElement("form");
   const label = document.createElement("label");
   const input = document.createElement("input");
+  const submit = document.createElement("button");
+  submit.textContent = "Submit";
   input.id = "inp";
   input.placeholder = "Enter Task Title";
   label.textContent = "title:";
@@ -82,6 +84,10 @@ function draw(state: State) {
       addToDo(input.value);
     }
   });
+  submit.addEventListener("click", () => {
+    addToDo(input.value);
+  });
+  form.append(submit);
   app.append(form);
 
   const todoList = document.createElement("ul");
