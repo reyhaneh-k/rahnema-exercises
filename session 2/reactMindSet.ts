@@ -82,7 +82,7 @@ function draw(state: State) {
   form.append(input);
 
   //submitting tasks with an enter keypress event and a click event
-  input.addEventListener("keypress", (e) => {
+  input.addEventListener("keydown", (e) => {
     if (e.key == "Enter" && input.value !== "") {
       addToDo(input.value);
     }
