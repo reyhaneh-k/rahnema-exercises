@@ -5,15 +5,12 @@ body {
   justify-content: center;
   padding-top: 50px;
 }
-#root {
-  margin-left: 40%;
-  margin-right: 60%;
-}
+
 .App {
   padding: 10px;
   border-radius: 5px;
   background-color: skyblue;
-  width: 700px;
+  width: 750px;
   font-size: large;
 }
 
