@@ -75,30 +75,6 @@ const WordsContext = createContext<{
 });
 
 function App() {
-  const divStyle = {
-    fontSize: "larger",
-    borderRadius: "5px",
-    backgroundColor: "skyblue",
-    padding: "5px",
-    width: "900px",
-  };
-
-  const style = {
-    padding: "5px",
-    marginTop: "5px",
-    paddingLeft: "20px",
-    paddingRight: "20px",
-    borderRadius: "5px",
-  };
-
-  const retryStyle = {
-    background: "url(retry.png)",
-    marginLeft: "2px",
-    backgroundColor: "cornflowerblue",
-    border: "none",
-    borderRadius: "3px",
-    padding: "8px",
-  };
   interface State {
     index: number;
   }
@@ -191,19 +167,13 @@ function App() {
           countDown,
         }}
       >
-        <div style={divStyle}>
+        <div className="App">
           <TextDisplay />
-          <section
-            style={{
-              backgroundColor: "rgb(109, 176, 243)",
-              marginTop: "10px",
-              borderRadius: "5px",
-            }}
-          >
+          <section className="InputWrap">
             <input
               value={inputText}
               type="text"
-              style={style}
+              className="inputForm"
               onKeyDown={(event) => {
                 keyDown(event);
               }}
@@ -212,7 +182,7 @@ function App() {
               }}
             />
             <Timer />
-            <button style={retryStyle}>R</button>
+            <button className="retryButton">Reset</button>
           </section>{" "}
         </div>
         <Result />
@@ -253,16 +223,8 @@ function TextDisplay() {
       ])
       .map((line) => line.arr);
   };
-  const displayTextStyle = {
+  const style = {
     display: remaining > 0 ? "block" : "none",
-    backgroundColor: "white",
-    borderRadius: "5px",
-    // display: "-webkit-box",
-    // WebkitBoxOrient: "vertical",
-    // WebkitLineClamp: 2,
-    outerWidth: "max-content",
-    overflow: "hidden",
-    color: "black",
   };
   const { words } = useContext(WordsContext);
   // if wordlines had its own state, its value would update one cycle after words and therefore the displayLines would update one word late!
@@ -283,18 +245,19 @@ function TextDisplay() {
   }, [words, wordLines]);
 
   return (
-    <div style={displayTextStyle}>
+    <div className="TextDisplay" style={style}>
       {wordLines.slice(displayLines, displayLines + 2).map((line, i) => {
         return (
-          <div key={i}>
+          <div style={{ lineHeight: "30px" }} key={i}>
             {line.map((word, j) => (
               <span
                 key={j}
                 style={{
                   background: word.color,
-                  padding: "1px",
-                  margin: "1px",
-                  borderRadius: "2px",
+                  padding: "5px",
+                  textAlign: "center",
+                  verticalAlign: "middle",
+                  borderRadius: "5px",
                 }}
               >
                 {word.text}{" "}
@@ -322,40 +285,21 @@ function Timer() {
   if (remaining === 0) {
     clearInterval(intervalID);
   }
-  const style = {
-    backgroundColor: "dimgray",
-    padding: "10px",
-    marginLeft: "3px",
-    fontSize: "small",
-    borderRadius: "5px",
-    margin: "5px",
-  };
-  return <span style={style}>{remaining}</span>;
+  return <span className="timerDisplay">{remaining}</span>;
 }
 
 function Result() {
   const { remaining } = useContext(TimeContext);
   const style = {
     display: remaining === 0 ? "flex" : "none",
-    padding: "5px",
-    marginTop: "5px",
-    paddingLeft: "20px",
-    paddingRight: "20px",
-    backgroundColor: "rgb(109, 176, 243)",
-    borderRadius: "5px",
-    alignItems: "center",
-    width: "300px",
   };
   const { correctWords, totalWords } = useContext(WordsContext);
   return (
-    <div style={style}>
-      WPM: {correctWords}
-      <br />
-      correct words: {correctWords}
-      <br />
-      wrong words: {totalWords - correctWords}
-      <br />
-    </div>
+    <tr className="Result" style={style}>
+      <td>WPM: {totalWords}</td>
+      <td>Correct Words: {correctWords}</td>
+      <td>Wrong Words: {totalWords - correctWords}</td>
+    </tr>
   );
 }
 

@@ -1,38 +1,76 @@
-.App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+body {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  padding-top: 50px;
+}
+#root {
+  margin-left: 40%;
+  margin-right: 60%;
+}
+.App {
+  padding: 10px;
+  border-radius: 5px;
+  background-color: skyblue;
+  width: 700px;
+  font-size: large;
 }
 
-.App-link {
-  color: #61dafb;
+.TextDisplay {
+  border-radius: 5px;
+  background-color: white;
+  padding: 10px;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.Result {
+  background-color: rgb(109, 176, 243);
+  border-radius: 5px;
+  color: aliceblue;
+  font-size: larger;
+  font-weight: 600;
+  padding: 15px;
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-around;
+  gap: 5px;
+}
+
+.InputWrap {
+  background-color: rgb(109, 176, 243);
+  margin-top: 20px;
+  border-radius: 5px;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+}
+
+.inputForm {
+  padding-inline: 20px;
+  border-radius: 5px;
+  height: 30px;
+}
+
+.retryButton {
+  background-color: lightskyblue;
+  margin-left: 2px;
+  border: none;
+  border-radius: 3px;
+  font-size: medium;
+  height: 30px;
+}
+
+.timerDisplay {
+  background-color: gainsboro;
+  margin-left: 10px;
+  font-size: medium;
+  align-self: center;
+  text-align: center;
+  align-content: center;
+  padding-inline: 5px;
+  border-radius: 5px;
+  margin: 5px;
+  height: 30px;
 }
