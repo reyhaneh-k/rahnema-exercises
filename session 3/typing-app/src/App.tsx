@@ -79,7 +79,6 @@ function App() {
   interface State {
     index: number;
   }
-  const [inputText, setInputText] = useState("");
   const [state, setState] = useState<State>({
     index: 0,
   });
@@ -88,7 +87,6 @@ function App() {
   const setID = (id: number) => {
     setIntervalID(id);
   };
-
   const [remaining, setRemaining] = useState(testTime);
   const countDown = () => {
     setRemaining((remaining) => remaining - 1);
@@ -102,7 +100,6 @@ function App() {
   }, []);
   const [totalWords, setTotalWords] = useState(0);
   const [correctWords, setCorrectWords] = useState(0);
-
   const [words, setWords] = useState<CurrentWord[]>(
     shuffle(typingWords).map((word, i) => {
       if (i === 0) {
@@ -117,6 +114,18 @@ function App() {
       };
     })
   );
+
+  const updateWords = (color: CurrentWord["color"]) => {
+    setWords((words) => {
+      const newWords = JSON.parse(JSON.stringify(words));
+
+      newWords[state.index].color = color;
+      if (state.index + 1 < words.length) {
+        newWords[state.index + 1].color = "lightgray";
+      }
+      return newWords;
+    });
+  };
   const checkCorrection = (typedWord: string) => {
     if (typedWord === words[state.index].text) {
       updateWords("#ACE1AF");
@@ -138,43 +147,37 @@ function App() {
     }
   };
   const checkCorrectionWhileTyping = (typedWord: string) => {
-    if (typedWord !== words[state.index].text.slice(0, typedWord.length)) {
+    if (typedWord === words[state.index].text.slice(0, typedWord.length)) {
       setWords((words) => {
         const newWords = JSON.parse(JSON.stringify(words));
-        newWords[state.index].color = "#F88379";
+        newWords[state.index].color = "lightgray";
         return newWords;
       });
     } else {
       setWords((words) => {
         const newWords = JSON.parse(JSON.stringify(words));
-
-        newWords[state.index].color = "lightgray";
+        newWords[state.index].color = "#F88379";
         return newWords;
       });
     }
   };
-  const keyDown = (event: KeyboardEvent) => {
-    if (event.code === "Space") {
-      if (inputText.trim().length >= 1) {
-        checkCorrection(inputText.trim());
+  const keyDown = (word: string) => {
+    const key = word.at(-1);
+    if (word === "") {
+      setWords((words) => {
+        const newWords = JSON.parse(JSON.stringify(words));
+        newWords[state.index].color = "lightgray";
+        return newWords;
+      });
+    }
+    if (typeof key !== "undefined" && /^[A-Za-z]/.test(key)) {
+      checkCorrectionWhileTyping(word.trim());
+    } else if (key === " ") {
+      if (word.trim().length >= 1) {
+        checkCorrection(word.trim());
       }
-      setInputText("");
-    } else if (/^[A-Za-z]/.test(event.key)) {
-      checkCorrectionWhileTyping(inputText.trim());
     }
     setStartedTyping(true);
-  };
-
-  const updateWords = (color: CurrentWord["color"]) => {
-    setWords((words) => {
-      const newWords = JSON.parse(JSON.stringify(words));
-
-      newWords[state.index].color = color;
-      if (state.index + 1 < words.length) {
-        newWords[state.index + 1].color = "lightgray";
-      }
-      return newWords;
-    });
   };
   return (
     <WordsContext.Provider value={{ words, correctWords, totalWords }}>
@@ -191,14 +194,10 @@ function App() {
           <TextDisplay />
           <section className="InputWrap">
             <input
-              value={inputText}
               type="text"
               className="inputForm"
-              onKeyDown={(event) => {
-                keyDown(event);
-              }}
               onChange={(event) => {
-                setInputText(event.target.value);
+                keyDown(event.target.value.trim());
               }}
             />
             <Timer />
@@ -323,11 +322,11 @@ function Result() {
   };
   const { correctWords, totalWords } = useContext(WordsContext);
   return (
-    <tr className="Result" style={style}>
-      <td>WPM: {totalWords}</td>
-      <td>Correct Words: {correctWords}</td>
-      <td>Wrong Words: {totalWords - correctWords}</td>
-    </tr>
+    <div className="Result" style={style}>
+      <span>WPM: {totalWords}</span>
+      <span>Correct Words: {correctWords}</span>
+      <span>Wrong Words: {totalWords - correctWords}</span>
+    </div>
   );
 }
 
