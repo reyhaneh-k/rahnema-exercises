@@ -71,3 +71,10 @@ body {
   margin: 5px;
   height: 30px;
 }
+
+.word {
+  padding: 5px;
+  text-align: center;
+  vertical-align: middle;
+  border-radius: 5px;
+}

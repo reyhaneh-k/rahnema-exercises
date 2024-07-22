@@ -1,11 +1,4 @@
-import {
-  useEffect,
-  useState,
-  createContext,
-  useContext,
-  KeyboardEvent,
-  useCallback,
-} from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import "./App.css";
 
 const typingWords = [
@@ -43,61 +36,24 @@ const typingWords = [
 
 interface CurrentWord {
   text: string;
-  color: "#F88379" | "#ACE1AF" | "lightgray" | "none";
+  status: "right" | "wrong" | "typing" | "unchecked";
 }
-
 const testTime = 60;
-const TimeContext = createContext({
-  startedTyping: false,
-  remaining: testTime,
-  intervalID: 0,
-  setID: (id: number) => {},
-  countDown: () => {},
-});
-const WordsContext = createContext<{
-  words: CurrentWord[];
-  correctWords: number;
-  totalWords: number;
-}>({
-  words: typingWords.map((word, i) => {
-    if (i === 0) {
-      return {
-        text: word,
-        color: "lightgray",
-      };
-    }
-    return {
-      text: word,
-      color: "none",
-    };
-  }),
-  correctWords: 0,
-  totalWords: 0,
-});
+
+const shuffle = (array: string[]) => {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+};
 
 function App() {
-  interface State {
-    index: number;
-  }
-  const [state, setState] = useState<State>({
-    index: 0,
-  });
+  const [index, setIndex] = useState<number>(0);
+  const [inputText, setInputText] = useState("");
   const [startedTyping, setStartedTyping] = useState(false);
   const [intervalID, setIntervalID] = useState(0);
-  const setID = (id: number) => {
-    setIntervalID(id);
-  };
   const [remaining, setRemaining] = useState(testTime);
-  const countDown = () => {
-    setRemaining((remaining) => remaining - 1);
-  };
-  const shuffle = useCallback((array: string[]) => {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-  }, []);
   const [totalWords, setTotalWords] = useState(0);
   const [correctWords, setCorrectWords] = useState(0);
   const [words, setWords] = useState<CurrentWord[]>(
@@ -105,118 +61,168 @@ function App() {
       if (i === 0) {
         return {
           text: word,
-          color: "lightgray",
+          status: "typing",
         };
       }
       return {
         text: word,
-        color: "none",
+        status: "unchecked",
       };
     })
   );
+  const countDown = useCallback(() => {
+    setRemaining((remaining) => remaining - 1);
+  }, []);
+  const incrmentIndex = useCallback(() => {
+    setIndex((index) => (index + 1 < words.length ? index + 1 : index));
+  }, [words.length]);
+  const updateWordStaus = useCallback(
+    (status: CurrentWord["status"], next: boolean) => {
+      setWords((words) => {
+        const newWords = words.map((word) => ({ ...word }));
+        newWords[index].status = status;
 
-  const updateWords = (color: CurrentWord["color"]) => {
-    setWords((words) => {
-      const newWords = JSON.parse(JSON.stringify(words));
-
-      newWords[state.index].color = color;
-      if (state.index + 1 < words.length) {
-        newWords[state.index + 1].color = "lightgray";
+        if (next && index + 1 < words.length) {
+          newWords[index + 1].status = "typing";
+        }
+        return newWords;
+      });
+    },
+    [index]
+  );
+  const updateWords = useCallback(
+    (typedWord: string, next: boolean) => {
+      if (next) {
+        if (typedWord === words[index].text) {
+          console.log(typedWord, words[index].text);
+          updateWordStaus("right", next);
+          setCorrectWords((correctWords) => correctWords + 1);
+          setTotalWords((totalWords) => totalWords + 1);
+          incrmentIndex();
+        } else {
+          updateWordStaus("wrong", next);
+          setTotalWords((totalWords) => totalWords + 1);
+          incrmentIndex();
+        }
+      } else if (typedWord === words[index].text.slice(0, typedWord.length)) {
+        updateWordStaus("right", next);
+      } else {
+        updateWordStaus("wrong", next);
       }
-      return newWords;
-    });
-  };
-  const checkCorrection = (typedWord: string) => {
-    if (typedWord === words[state.index].text) {
-      updateWords("#ACE1AF");
-      setCorrectWords((correctWords) => correctWords + 1);
-      setTotalWords((totalWords) => totalWords + 1);
-      setState((state) =>
-        state.index + 1 < words.length
-          ? { index: state.index + 1 }
-          : { index: state.index }
-      );
-    } else {
-      updateWords("#F88379");
-      setTotalWords((totalWords) => totalWords + 1);
-      setState((state) =>
-        state.index + 1 < words.length
-          ? { index: state.index + 1 }
-          : { index: state.index }
-      );
-    }
-  };
-  const checkCorrectionWhileTyping = (typedWord: string) => {
-    if (typedWord === words[state.index].text.slice(0, typedWord.length)) {
-      setWords((words) => {
-        const newWords = JSON.parse(JSON.stringify(words));
-        newWords[state.index].color = "lightgray";
-        return newWords;
-      });
-    } else {
-      setWords((words) => {
-        const newWords = JSON.parse(JSON.stringify(words));
-        newWords[state.index].color = "#F88379";
-        return newWords;
-      });
-    }
-  };
-  const keyDown = (word: string) => {
-    const key = word.at(-1);
-    if (word === "") {
-      setWords((words) => {
-        const newWords = JSON.parse(JSON.stringify(words));
-        newWords[state.index].color = "lightgray";
-        return newWords;
-      });
-    }
-    if (typeof key !== "undefined" && /^[A-Za-z]/.test(key)) {
-      checkCorrectionWhileTyping(word.trim());
-    } else if (key === " ") {
-      if (word.trim().length >= 1) {
-        checkCorrection(word.trim());
+    },
+    [updateWordStaus, incrmentIndex, words, index]
+  );
+  const handleChange = useCallback(
+    (word: string) => {
+      if (word.length === 0) {
+        updateWordStaus("typing", false);
+      } else if (word.at(-1) === " ") {
+        if (word.length > 1) {
+          updateWords(word.trim(), true);
+          setStartedTyping(true);
+        }
+        setInputText("");
+      } else {
+        updateWords(word, false);
+        setStartedTyping(true);
       }
+    },
+    [updateWordStaus, updateWords]
+  );
+  useEffect(() => handleChange(inputText), [inputText]);
+  useEffect(() => {
+    if (startedTyping) {
+      const ID = setInterval(() => {
+        countDown();
+      }, 1000);
+      setIntervalID(Number(ID));
     }
-    setStartedTyping(true);
+  }, [startedTyping, countDown]);
+  useEffect(() => {
+    if (remaining === 0) {
+      clearInterval(intervalID);
+    }
+  }, [remaining, intervalID]);
+  const Reset = () => {
+    // setWords(
+    //   shuffle(typingWords).map((word, i) => {
+    //     if (i === 0) {
+    //       return {
+    //         text: word,
+    //         status: "typing",
+    //       };
+    //     }
+    //     return {
+    //       text: word,
+    //       status: "unchecked",
+    //     };
+    //   })
+    // );
+    // clearInterval(intervalID);
   };
   return (
-    <WordsContext.Provider value={{ words, correctWords, totalWords }}>
-      <TimeContext.Provider
-        value={{
-          startedTyping,
-          remaining,
-          intervalID,
-          setID,
-          countDown,
-        }}
-      >
-        <div className="App">
-          <TextDisplay />
-          <section className="InputWrap">
-            <input
-              type="text"
-              className="inputForm"
-              onChange={(event) => {
-                keyDown(event.target.value.trim());
-              }}
-            />
-            <Timer />
-            <button
-              className="retryButton"
-              onClick={() => window.location.reload()}
-            >
-              Reset
-            </button>
-          </section>{" "}
-        </div>
-        <Result />
-      </TimeContext.Provider>
-    </WordsContext.Provider>
+    <>
+      <div className="App">
+        <TextDisplay remainingTime={remaining} words={words} />
+        <InputWrapper
+          inputText={inputText}
+          setInputText={(arg: string) => setInputText(arg)}
+          remaining={remaining}
+          Reset={Reset}
+        ></InputWrapper>
+      </div>
+      <Result
+        remainingTime={remaining}
+        correctWords={correctWords}
+        totalWords={totalWords}
+      />
+    </>
   );
 }
-
-function TextDisplay() {
-  const { remaining } = useContext(TimeContext);
+function InputWrapper({
+  remaining,
+  Reset,
+  inputText,
+  setInputText,
+}: {
+  remaining: number;
+  Reset: () => void;
+  inputText: string;
+  setInputText: (arg: string) => void;
+}) {
+  return (
+    <section className="InputWrap">
+      <InputText inputText={inputText} setInputText={setInputText}></InputText>
+      <Timer remainingTime={remaining} />
+      <ResetButton Reset={Reset}></ResetButton>
+    </section>
+  );
+}
+function InputText({
+  inputText,
+  setInputText,
+}: {
+  inputText: string;
+  setInputText: (arg: string) => void;
+}) {
+  return (
+    <input
+      value={inputText}
+      type="text"
+      className="inputForm"
+      onChange={(event) => {
+        setInputText(event.target.value);
+      }}
+    />
+  );
+}
+function TextDisplay({
+  remainingTime,
+  words,
+}: {
+  remainingTime: number;
+  words: CurrentWord[];
+}) {
   const word2D = useCallback(
     (words: CurrentWord[], maxChar = 70): CurrentWord[][] => {
       const setWordLines = (
@@ -250,20 +256,23 @@ function TextDisplay() {
     },
     []
   );
-  const style = {
-    display: remaining > 0 ? "block" : "none",
-  };
-  const { words } = useContext(WordsContext);
-  // if wordlines had its own state, its value would update one cycle after words and therefore the displayLines would update one word late!
-  const wordLines = word2D(words);
+  const [wordLines, setWordLines] = useState(word2D(words));
   const [displayLines, setDisplayLines] = useState(0);
+  const style = {
+    display: remainingTime > 0 ? "block" : "none",
+  };
+
+  useEffect(() => {
+    setWordLines(word2D(words));
+  }, [words, word2D]);
 
   useEffect(() => {
     setDisplayLines((displayLines) => {
       if (
-        (wordLines[displayLines].at(-1)?.color === "#ACE1AF" ||
-          wordLines[displayLines].at(-1)?.color === "#F88379") &&
-        displayLines + 2 < wordLines.length
+        (wordLines[displayLines].at(-1)?.status === "wrong" ||
+          wordLines[displayLines].at(-1)?.status === "right") &&
+        displayLines + 2 < wordLines.length &&
+        wordLines[displayLines + 1][0].status === "typing"
       ) {
         return displayLines + 1;
       }
@@ -278,13 +287,19 @@ function TextDisplay() {
           <div style={{ lineHeight: "30px" }} key={i}>
             {line.map((word, j) => (
               <span
+                className="word"
                 key={j}
                 style={{
-                  background: word.color,
-                  padding: "5px",
-                  textAlign: "center",
-                  verticalAlign: "middle",
-                  borderRadius: "5px",
+                  backgroundColor:
+                    word.status === "wrong"
+                      ? "#F88379"
+                      : word.status === "right"
+                      ? "#ACE1AF"
+                      : word.status === "typing"
+                      ? "lightgray"
+                      : word.status === "unchecked"
+                      ? "none"
+                      : "none",
                 }}
               >
                 {word.text}{" "}
@@ -296,31 +311,28 @@ function TextDisplay() {
     </div>
   );
 }
-
-function Timer() {
-  const { startedTyping, remaining, intervalID, setID, countDown } =
-    useContext(TimeContext);
-  useEffect(() => {
-    if (startedTyping) {
-      const ID = setInterval(() => {
-        countDown();
-      }, 1000);
-      // typescript threw an error that  ID is of type TIMER!!! therefore I had to do this to get rid of that error.
-      setID(Number(ID));
-    }
-  }, [startedTyping]);
-  if (remaining === 0) {
-    clearInterval(intervalID);
-  }
-  return <span className="timerDisplay">{remaining}</span>;
+function Timer({ remainingTime }: { remainingTime: number }) {
+  return <span className="timerDisplay">{remainingTime}</span>;
 }
-
-function Result() {
-  const { remaining } = useContext(TimeContext);
+function ResetButton({ Reset }: { Reset: () => void }) {
+  return (
+    <button className="retryButton" onClick={Reset}>
+      Reset
+    </button>
+  );
+}
+function Result({
+  remainingTime,
+  correctWords,
+  totalWords,
+}: {
+  remainingTime: number;
+  correctWords: number;
+  totalWords: number;
+}) {
   const style = {
-    display: remaining === 0 ? "flex" : "none",
+    display: remainingTime === 0 ? "flex" : "none",
   };
-  const { correctWords, totalWords } = useContext(WordsContext);
   return (
     <div className="Result" style={style}>
       <span>WPM: {totalWords}</span>
