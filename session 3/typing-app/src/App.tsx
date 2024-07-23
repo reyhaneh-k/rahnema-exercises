@@ -188,11 +188,7 @@ function App() {
           <ResetButton onClick={reset}></ResetButton>
         </InputWrapper>
       </div>
-      <Result
-        remainingTime={remaining}
-        correctWords={wordCount.correctWords}
-        totalWords={wordCount.totalWords}
-      />
+      <Result remainingTime={remaining} wordCount={wordCount} />
     </>
   );
 }
