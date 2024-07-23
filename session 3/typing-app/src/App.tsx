@@ -37,6 +37,7 @@ const typingWords = [
 interface CurrentWord {
   text: string;
   status: "right" | "wrong" | "typing" | "unchecked";
+  id: number;
 }
 const testTime = 60;
 
@@ -62,11 +63,13 @@ function App() {
         return {
           text: word,
           status: "typing",
+          id: i,
         };
       }
       return {
         text: word,
         status: "unchecked",
+        id: i,
       };
     })
   );
@@ -288,7 +291,7 @@ function TextDisplay({
             {line.map((word, j) => (
               <span
                 className="word"
-                key={j}
+                key={word.id}
                 style={{
                   backgroundColor:
                     word.status === "wrong"
