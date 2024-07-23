@@ -48,7 +48,6 @@ const shuffle = (array: string[]) => {
   }
   return array;
 };
-
 function App() {
   const [index, setIndex] = useState<number>(0);
   const [inputText, setInputText] = useState("");
