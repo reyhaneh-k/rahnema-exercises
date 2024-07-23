@@ -1,5 +1,11 @@
-import React, { useEffect, useState, useCallback, ReactNode } from "react";
+import { useEffect, useState, useCallback } from "react";
 import "./App.css";
+import InputText from "./components/InputText";
+import InputWrapper from "./components/InputWrapper";
+import ResetButton from "./components/ResetButton";
+import Result from "./components/Result";
+import TextDisplay from "./components/TextDisplay";
+import Timer from "./components/Timer";
 
 const typingWords = [
   "keyboard",
@@ -190,149 +196,4 @@ function App() {
     </>
   );
 }
-function InputWrapper({ children }: { children: ReactNode }) {
-  return <section className="InputWrap">{children}</section>;
-}
-function InputText({
-  inputText,
-  setInputText,
-}: {
-  inputText: string;
-  setInputText: (arg: string) => void;
-}) {
-  return (
-    <input
-      value={inputText}
-      type="text"
-      className="inputForm"
-      onChange={(event) => {
-        setInputText(event.target.value);
-      }}
-    />
-  );
-}
-function TextDisplay({
-  remainingTime,
-  words,
-}: {
-  remainingTime: number;
-  words: CurrentWord[];
-}) {
-  const word2D = useCallback(
-    (words: CurrentWord[], maxChar = 70): CurrentWord[][] => {
-      const setWordLines = (
-        prev: {
-          arr: CurrentWord[];
-          char: number;
-        }[],
-        cur: CurrentWord,
-        index: number,
-        array: CurrentWord[]
-      ) => {
-        if (prev.at(-1)!.char + cur.text.length < maxChar) {
-          prev.at(-1)!.arr.push(cur);
-          prev.at(-1)!.char += cur.text.length;
-          return prev;
-        }
-        prev.push({
-          arr: [cur],
-          char: cur.text.length,
-        });
-        return prev;
-      };
-      return words
-        .reduce(setWordLines, [
-          {
-            arr: [],
-            char: 0,
-          },
-        ])
-        .map((line) => line.arr);
-    },
-    []
-  );
-  const [wordLines, setWordLines] = useState(word2D(words));
-  const [displayLines, setDisplayLines] = useState(0);
-  const style = {
-    display: remainingTime > 0 ? "block" : "none",
-  };
-
-  useEffect(() => {
-    setWordLines(word2D(words));
-  }, [words, word2D]);
-
-  useEffect(() => {
-    setDisplayLines((displayLines) => {
-      if (
-        displayLines + 2 < wordLines.length &&
-        wordLines[displayLines + 1][0].status === "typing"
-      ) {
-        return displayLines + 1;
-      }
-      return displayLines;
-    });
-  }, [words, wordLines]);
-
-  return (
-    <div className="TextDisplay" style={style}>
-      {wordLines.slice(displayLines, displayLines + 2).map((line, i) => {
-        return (
-          <div style={{ lineHeight: "30px" }} key={i}>
-            {line.map((word, j) => (
-              <span
-                className="word"
-                key={word.id}
-                style={{
-                  backgroundColor:
-                    word.status === "wrong"
-                      ? "#F88379"
-                      : word.status === "right"
-                      ? "#ACE1AF"
-                      : word.status === "typing"
-                      ? "lightgray"
-                      : word.status === "unchecked"
-                      ? "none"
-                      : "none",
-                }}
-              >
-                {word.text}{" "}
-              </span>
-            ))}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-function Timer({ remainingTime }: { remainingTime: number }) {
-  return <span className="timerDisplay">{remainingTime}</span>;
-}
-function ResetButton({ onClick }: { onClick: () => void }) {
-  return (
-    <button className="retryButton" onClick={onClick}>
-      Reset
-    </button>
-  );
-}
-function Result({
-  remainingTime,
-  correctWords,
-  totalWords,
-}: {
-  remainingTime: number;
-  correctWords: number;
-  totalWords: number;
-}) {
-  const style = {
-    display: remainingTime === 0 ? "flex" : "none",
-  };
-  return (
-    <div className="Result" style={style}>
-      <span>WPM: {totalWords}</span>
-      <span>Correct Words: {correctWords}</span>
-      <span>Wrong Words: {totalWords - correctWords}</span>
-    </div>
-  );
-}
-
 export default App;
