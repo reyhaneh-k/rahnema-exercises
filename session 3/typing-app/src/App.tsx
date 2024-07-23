@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, ReactNode } from "react";
 import "./App.css";
 
 const typingWords = [
@@ -55,8 +55,10 @@ function App() {
   const [startedTyping, setStartedTyping] = useState(false);
   const [intervalID, setIntervalID] = useState(0);
   const [remaining, setRemaining] = useState(testTime);
-  const [totalWords, setTotalWords] = useState(0);
-  const [correctWords, setCorrectWords] = useState(0);
+  const [wordCount, setWordCount] = useState({
+    totalWords: 0,
+    correctWords: 0,
+  });
   const [words, setWords] = useState<CurrentWord[]>(
     shuffle(typingWords).map((word, i) => {
       if (i === 0) {
@@ -99,12 +101,17 @@ function App() {
         if (typedWord === words[index].text) {
           console.log(typedWord, words[index].text);
           updateWordStaus("right", next);
-          setCorrectWords((correctWords) => correctWords + 1);
-          setTotalWords((totalWords) => totalWords + 1);
+          setWordCount((wordCount) => ({
+            totalWords: wordCount.totalWords + 1,
+            correctWords: wordCount.correctWords + 1,
+          }));
           incrmentIndex();
         } else {
           updateWordStaus("wrong", next);
-          setTotalWords((totalWords) => totalWords + 1);
+          setWordCount((wordCount) => ({
+            ...wordCount,
+            totalWords: wordCount.totalWords + 1,
+          }));
           incrmentIndex();
         }
       } else if (typedWord === words[index].text.slice(0, typedWord.length)) {
@@ -146,7 +153,7 @@ function App() {
       clearInterval(intervalID);
     }
   }, [remaining, intervalID]);
-  const Reset = () => {
+  const reset = () => {
     // setWords(
     //   shuffle(typingWords).map((word, i) => {
     //     if (i === 0) {
@@ -167,39 +174,25 @@ function App() {
     <>
       <div className="App">
         <TextDisplay remainingTime={remaining} words={words} />
-        <InputWrapper
-          inputText={inputText}
-          setInputText={(arg: string) => setInputText(arg)}
-          remaining={remaining}
-          Reset={Reset}
-        ></InputWrapper>
+        <InputWrapper>
+          <InputText
+            inputText={inputText}
+            setInputText={setInputText}
+          ></InputText>
+          <Timer remainingTime={remaining} />
+          <ResetButton onClick={reset}></ResetButton>
+        </InputWrapper>
       </div>
       <Result
         remainingTime={remaining}
-        correctWords={correctWords}
-        totalWords={totalWords}
+        correctWords={wordCount.correctWords}
+        totalWords={wordCount.totalWords}
       />
     </>
   );
 }
-function InputWrapper({
-  remaining,
-  Reset,
-  inputText,
-  setInputText,
-}: {
-  remaining: number;
-  Reset: () => void;
-  inputText: string;
-  setInputText: (arg: string) => void;
-}) {
-  return (
-    <section className="InputWrap">
-      <InputText inputText={inputText} setInputText={setInputText}></InputText>
-      <Timer remainingTime={remaining} />
-      <ResetButton Reset={Reset}></ResetButton>
-    </section>
-  );
+function InputWrapper({ children }: { children: ReactNode }) {
+  return <section className="InputWrap">{children}</section>;
 }
 function InputText({
   inputText,
@@ -272,8 +265,6 @@ function TextDisplay({
   useEffect(() => {
     setDisplayLines((displayLines) => {
       if (
-        (wordLines[displayLines].at(-1)?.status === "wrong" ||
-          wordLines[displayLines].at(-1)?.status === "right") &&
         displayLines + 2 < wordLines.length &&
         wordLines[displayLines + 1][0].status === "typing"
       ) {
@@ -317,9 +308,9 @@ function TextDisplay({
 function Timer({ remainingTime }: { remainingTime: number }) {
   return <span className="timerDisplay">{remainingTime}</span>;
 }
-function ResetButton({ Reset }: { Reset: () => void }) {
+function ResetButton({ onClick }: { onClick: () => void }) {
   return (
-    <button className="retryButton" onClick={Reset}>
+    <button className="retryButton" onClick={onClick}>
       Reset
     </button>
   );
