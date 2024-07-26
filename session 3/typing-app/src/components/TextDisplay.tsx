@@ -4,13 +4,7 @@ interface CurrentWord {
   status: "right" | "wrong" | "typing" | "unchecked";
   id: number;
 }
-export default function TextDisplay({
-  remainingTime,
-  words,
-}: {
-  remainingTime: number;
-  words: CurrentWord[];
-}) {
+export default function TextDisplay({ words }: { words: CurrentWord[] }) {
   const word2D = useCallback(
     (words: CurrentWord[], maxChar = 70): CurrentWord[][] => {
       const setWordLines = (
@@ -46,9 +40,6 @@ export default function TextDisplay({
   );
   const [wordLines, setWordLines] = useState(word2D(words));
   const [displayLines, setDisplayLines] = useState(0);
-  const style = {
-    display: remainingTime > 0 ? "block" : "none",
-  };
 
   useEffect(() => {
     setWordLines(word2D(words));
@@ -67,7 +58,7 @@ export default function TextDisplay({
   }, [words, wordLines]);
 
   return (
-    <div className="TextDisplay" style={style}>
+    <div className="TextDisplay">
       {wordLines.slice(displayLines, displayLines + 2).map((line, i) => {
         return (
           <div style={{ lineHeight: "30px" }} key={i}>

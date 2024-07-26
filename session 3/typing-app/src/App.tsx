@@ -57,12 +57,12 @@ const shuffle = (array: string[]) => {
 function App() {
   const [index, setIndex] = useState<number>(0);
   const [inputText, setInputText] = useState("");
-  const [startedTyping, setStartedTyping] = useState(false);
   const [intervalID, setIntervalID] = useState(0);
   const [remaining, setRemaining] = useState(testTime);
-  const [wordCount, setWordCount] = useState({
+  const [finalState, setFinalState] = useState({
     totalWords: 0,
     correctWords: 0,
+    time: testTime,
   });
   const [words, setWords] = useState<CurrentWord[]>(
     shuffle(typingWords).map((word, i) => {
@@ -84,8 +84,16 @@ function App() {
     setRemaining((remaining) => remaining - 1);
   }, []);
   const incrmentIndex = useCallback(() => {
-    setIndex((index) => (index + 1 < words.length ? index + 1 : index));
-  }, [words.length]);
+    if (index + 1 < words.length) {
+      setIndex((index) => index + 1);
+    } else {
+      setFinalState((finalState) => ({
+        ...finalState,
+        time: testTime - remaining,
+      }));
+      setRemaining(0);
+    }
+  }, [words.length, index, remaining]);
   const updateWordStaus = useCallback(
     (status: CurrentWord["status"], next: boolean) => {
       setWords((words) => {
@@ -106,14 +114,15 @@ function App() {
         if (typedWord === words[index].text) {
           console.log(typedWord, words[index].text);
           updateWordStaus("right", next);
-          setWordCount((wordCount) => ({
+          setFinalState((wordCount) => ({
+            ...finalState,
             totalWords: wordCount.totalWords + 1,
             correctWords: wordCount.correctWords + 1,
           }));
           incrmentIndex();
         } else {
           updateWordStaus("wrong", next);
-          setWordCount((wordCount) => ({
+          setFinalState((wordCount) => ({
             ...wordCount,
             totalWords: wordCount.totalWords + 1,
           }));
@@ -125,7 +134,7 @@ function App() {
         updateWordStaus("wrong", next);
       }
     },
-    [updateWordStaus, incrmentIndex, words, index]
+    [updateWordStaus, incrmentIndex, words, index, finalState]
   );
   const handleChange = useCallback(
     (word: string) => {
@@ -134,25 +143,27 @@ function App() {
       } else if (word.at(-1) === " ") {
         if (word.length > 1) {
           updateWords(word.trim(), true);
-          setStartedTyping(true);
+          if (intervalID === 0) {
+            const ID = setInterval(() => {
+              countDown();
+            }, 1000);
+            setIntervalID(Number(ID));
+          }
         }
         setInputText("");
       } else {
         updateWords(word, false);
-        setStartedTyping(true);
+        if (intervalID === 0) {
+          const ID = setInterval(() => {
+            countDown();
+          }, 1000);
+          setIntervalID(Number(ID));
+        }
       }
     },
-    [updateWordStaus, updateWords]
+    [updateWordStaus, updateWords, countDown, intervalID]
   );
   useEffect(() => handleChange(inputText), [inputText]);
-  useEffect(() => {
-    if (startedTyping) {
-      const ID = setInterval(() => {
-        countDown();
-      }, 1000);
-      setIntervalID(Number(ID));
-    }
-  }, [startedTyping, countDown]);
   useEffect(() => {
     if (remaining === 0) {
       clearInterval(intervalID);
@@ -178,7 +189,7 @@ function App() {
   return (
     <>
       <div className="App">
-        <TextDisplay remainingTime={remaining} words={words} />
+        {remaining > 0 ? <TextDisplay words={words} /> : null}
         <InputWrapper>
           <InputText
             inputText={inputText}
@@ -188,7 +199,7 @@ function App() {
           <ResetButton onClick={reset}></ResetButton>
         </InputWrapper>
       </div>
-      <Result remainingTime={remaining} wordCount={wordCount} />
+      {remaining > 0 ? null : <Result finalState={finalState} />}
     </>
   );
 }
