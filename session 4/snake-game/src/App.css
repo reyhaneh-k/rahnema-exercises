@@ -1,0 +1,33 @@
+.App {
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  padding: 50px;
+  background-color: rgb(156, 186, 91);
+  height: 100vh;
+}
+.App canvas {
+  border-radius: 1px;
+  background-color: rgb(48, 57, 28);
+  margin-bottom: 20px;
+}
+
+.result {
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 20px;
+  font-size: x-large;
+  text-align: center;
+  background-color: rgb(48, 57, 28);
+  color: aliceblue;
+}
+
+.App button {
+  padding: 10px;
+  background-color: rgb(93, 168, 197);
+  border: none;
+  font-size: large;
+  margin: 10px;
+}
