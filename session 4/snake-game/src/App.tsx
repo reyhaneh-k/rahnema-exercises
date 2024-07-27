@@ -1,4 +1,4 @@
-import React, { act, useEffect, useReducer, useRef } from "react";
+import React, { useEffect, useReducer, useRef } from "react";
 import "./App.css";
 
 type Coordinate = { x: number; y: number };
