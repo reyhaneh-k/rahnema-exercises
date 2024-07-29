@@ -21,6 +21,7 @@ type action =
   | { type: "start"; fps: number }
   | { type: "setFrame" }
   | { type: "arrowDirection"; key: DirectionType };
+
 const playground = {
   width: 30,
   height: 30,
@@ -93,25 +94,25 @@ const updateSnake = (state: State) => {
       newSnake.push(newHead);
       return {
         ...state,
-        direction: state.arrowDirection,
+        direction: direction,
         appleCoordinates: setAppleCoordinates(state.snake),
         snake: newSnake,
       };
+    } else {
+      newSnake = state.snake.slice(1);
+      newSnake.push(newHead);
+      return {
+        ...state,
+        direction: direction,
+        appleCoordinates: state.appleCoordinates,
+        snake: newSnake,
+      };
     }
-    newSnake = state.snake.slice(1);
-    newSnake.push(newHead);
-    return {
-      ...state,
-      direction: state.arrowDirection,
-
-      appleCoordinates: state.appleCoordinates,
-      snake: newSnake,
-    };
   } else {
+    clearInterval(state.intervalID);
     return {
       ...state,
-      intervalID: -1,
-      direction: state.arrowDirection,
+      internalID: -1,
       gameOver: true,
       scores: [...state.scores, state.snake.length],
     };
@@ -124,56 +125,29 @@ const calculateNewHead = (
   let newHead: CoordinateType = { ...head };
   switch (direction) {
     case "up":
-      if (head.y === 0) {
-        newHead = {
-          x: head.x,
-          y: playground.height,
-        };
-      } else {
-        newHead = {
-          x: head.x,
-          y: head.y - 1,
-        };
-      }
+      newHead = {
+        x: head.x,
+        y: head.y <= 0 ? playground.height - 1 : head.y - 1,
+      };
       return newHead;
     case "down":
-      if (head.y === playground.height - 1) {
-        newHead = {
-          x: head.x,
-          y: 0,
-        };
-      } else {
-        newHead = {
-          x: head.x,
-          y: head.y + 1,
-        };
-      }
+      newHead = {
+        x: head.x,
+        y: head.y >= playground.height - 1 ? 0 : head.y + 1,
+      };
       return newHead;
     case "right":
-      if (head.x === playground.width - 1) {
-        newHead = {
-          x: 0,
-          y: head.y,
-        };
-      } else {
-        newHead = {
-          x: head.x + 1,
-          y: head.y,
-        };
-      }
+      newHead = {
+        x: head.x >= playground.width - 1 ? 0 : head.x + 1,
+        y: head.y,
+      };
+
       return newHead;
     case "left":
-      if (head.x === 0) {
-        newHead = {
-          x: playground.width,
-          y: head.y,
-        };
-      } else {
-        newHead = {
-          x: head.x - 1,
-          y: head.y,
-        };
-      }
+      newHead = {
+        x: head.x <= 0 ? playground.width - 1 : head.x - 1,
+        y: head.y,
+      };
       return newHead;
   }
 };
