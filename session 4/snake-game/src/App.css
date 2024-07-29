@@ -31,3 +31,19 @@
   font-size: large;
   margin: 10px;
 }
+
+.start {
+  display: flex;
+  justify-content: stretch;
+  border-radius: 1px;
+  background-color: rgb(48, 57, 28);
+  margin-bottom: 20px;
+  padding: 20px;
+  color: aliceblue;
+  font-size: x-large;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.start span {
+  margin: 10px;
+}
